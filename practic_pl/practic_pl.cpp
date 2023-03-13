@@ -12,12 +12,12 @@ struct Date {
     unsigned short int month;
     unsigned short int year;
 };
+
 struct Record {
     char author[20];
     char name[100];
     unsigned short year;
-    char group[2];
-    //char date[100];
+    char group[1];
     Date date;
 };
 
@@ -96,9 +96,10 @@ void drawTable(vector<vector<string>> lines, vector<string> columns, string titl
 }
 
 vector<Record> modifyRecords(vector<Record> lines) {
-    int n = lines.size();
-    int average = (lines[0].year + lines[1].year + lines[2].year) / n;
-    for (int i = 0; i < n; i++) lines[i].year = average;
+    vector<int> average;
+    for (auto &record : lines) {
+        strcpy_s(record.name, to_string(((record.date.day + record.date.month + record.date.year + record.year) / 4)).c_str());
+    }
     return lines;
 }
 
@@ -112,25 +113,29 @@ int main() {
     SetConsoleOutputCP(1251);
 
     vector<Record> lines = {
-      { "Сенкевич", "Потоп", 1978, "Х", {11, 11, 2020} },
-      { "Ландау", "Механика", 1989, "У", {11, 11, 2020} },
-      { "Дойль", "Сумчатые", 1990, "С", {12, 12, 2010} }
+      { "Сенкевич", "Потоп", 1978, 'Х', {11, 11, 2020} },
+      { "Ландау", "Механика", 1989, 'У', {11, 11, 2020} },
+      { "Дойль", "Сумчатые", 1990, 'С', {12, 12, 2010} }
     };
 
     auto changedRecords = modifyRecords(lines);
     vector<string> columnsMain = { "Автор книги", "Название", "Год выпуска", "Группа", "Дата подписания рукописи" };
-    string title = "Каталог библиотеки";
+    string title0 = "Каталог библиотеки (Практика 0, 3)";
     vector<vector<string>> records;
     vector<vector<string>> modifiedRecords;
     for (auto rec : lines) {
         records.push_back({ rec.author, rec.name, to_string(rec.year), rec.group, dateToString(rec.date) });
     }
-    drawTable(records, columnsMain, title, true);
+    drawTable(records, columnsMain, title0, true);
     
+    cout << "Задание: " << "изменить записи (элементы массива структур), содержащие вводимое с клавиатуры значение,\n";
+    cout << "значение на среднеарифметическое значение в соответствующих числовых столбцах";
+    string title1 = "Каталог библиотеки (Практика 1)";
+
     for (auto rec : changedRecords) {
         modifiedRecords.push_back({ rec.author, rec.name, to_string(rec.year), rec.group, dateToString(rec.date) });
     }
-    drawTable(modifiedRecords, columnsMain, title, true);
+    drawTable(modifiedRecords, columnsMain, title1, true);
 
     Record* A;
     Record** B;
@@ -155,6 +160,8 @@ int main() {
     vector<vector<string>> firstItemAddresses = { {firstItemAddressTable.str(), firstItemAddressA.str(), firstItemAddressB.str()} };
     vector<string> columnsFirstItem = { "Table", "A", "B" };
     string firstItemTableHeader = "Адреса первых элементов массива";
+
+    cout << "Практика 2:";
 
     drawTable(firstItemAddresses, columnsFirstItem, firstItemTableHeader);
 
