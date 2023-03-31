@@ -4,8 +4,12 @@
 #include <vector>
 #include <numeric>
 #include <sstream>
+#include <fstream>
 
 using namespace std;
+
+const char* TXT_PATH = "C:/prac/Frolov.txt";
+const char* BIN_PATH = "C:/prac/Frolov.bin";
 
 struct Date {
     unsigned short int day;
@@ -17,7 +21,7 @@ struct Record {
     char author[20];
     char name[100];
     unsigned short year;
-    char group[1];
+    char group[5];
     Date date;
 };
 
@@ -107,15 +111,71 @@ string dateToString(Date date) {
     return to_string(date.day) + "." + to_string(date.month) + "." + to_string(date.year);
 }
 
+vector<Record> readDataBin() {
+    ifstream file(BIN_PATH, ios::binary);
+    Record record;
+
+    vector<Record> records;
+
+    for (int i = 0; file.read((char*)&record, sizeof(record)); i++) {
+        records.push_back(record);
+    }
+    file.close();
+    return records;
+}
+
+void addRecordBin(vector <Record> records) {
+    ofstream file(BIN_PATH, ios::binary | ios::app);
+    for (auto &record : records) {
+        file.write((char*)&record, sizeof(record));
+    }
+    file.close();
+}
+
+vector<Record> readDataTxt() {
+    ifstream file(TXT_PATH);
+    Record record;
+
+    vector<Record> records;
+
+    for(int i = 0; i < 3; i++) {
+        file >> record.date.day;
+        file >> record.date.month;
+        file >> record.date.year;
+        file >> record.author;
+        file >> record.name;
+        file >> record.year;
+        file >> record.group;
+        records.push_back(record);
+    }
+
+    file.close();
+
+    return records;
+}
+
+void addRecordTxt(vector<Record> records) {
+    ofstream file(TXT_PATH, ios::app);
+    for(int i = 0; i < records.size(); i++) {
+        file << records[i].date.day << endl;
+        file << records[i].date.month << endl;
+        file << records[i].date.year << endl;
+        file << records[i].author << endl;
+        file << records[i].name << endl;
+        file << records[i].year << endl;
+        file << records[i].group << endl;
+    }
+    file.close();
+}
 int main() {
 
     SetConsoleCP(1251);
     SetConsoleOutputCP(1251);
 
     vector<Record> lines = {
-      { "Сенкевич", "Потоп", 1978, 'Х', {11, 11, 2020} },
-      { "Ландау", "Механика", 1989, 'У', {11, 11, 2020} },
-      { "Дойль", "Сумчатые", 1990, 'С', {12, 12, 2010} }
+      { "Сенкевич", "Потоп", 1978, "Х", {11, 11, 2020} },
+      { "Ландау", "Механика", 1989, "У", {11, 11, 2020} },
+      { "Дойль", "Сумчатые", 1990, "С", {12, 12, 2010} }
     };
 
     auto changedRecords = modifyRecords(lines);
@@ -194,6 +254,87 @@ int main() {
     }
 
     delete[]B;
-}
 
-// Фролов М.А., БАСО-02-22
+    cout << "Практика номер 4 (Вариант 5)\n";
+
+    vector<Record> linesFromFile;
+    vector<vector<string>> stringLines;
+
+    addRecordTxt(lines);
+    linesFromFile = readDataTxt();
+    string titleTxt = "Каталог библиотеки (из текстового файла)";
+
+    for(auto rec : linesFromFile) {
+        stringLines.push_back({rec.author, rec.name, to_string(rec.year), rec.group, dateToString(rec.date)});
+    }
+    drawTable(stringLines, columnsMain, titleTxt, true);
+
+    stringLines = {};
+
+    addRecordBin(lines);
+    linesFromFile = readDataBin();
+    string titleBin = "Каталог библиотеки (из бинарного файла)";
+
+    for(auto rec : linesFromFile) {
+        stringLines.push_back({rec.author, rec.name, to_string(rec.year), rec.group, dateToString(rec.date)});
+    }
+    drawTable(stringLines, columnsMain, titleBin, true);
+
+    cout << "Добавление четвертой записи:\n";
+
+    Record newRecord = {};
+
+    cout << "Введите автора книги\n";
+    cin >> newRecord.author;
+
+    cout << "Введите название книги\n";
+    cin >> newRecord.name;
+
+    cout << "Введите год выпуска книги\n";
+    cin >> newRecord.year;
+
+    cout << "Введите группу книги\n";
+    cin >> newRecord.group;
+
+    cout << "Введите день подписания рукописи\n";
+    cin >> newRecord.date.day;
+
+    cout << "Введите месяц подписания рукописи\n";
+    cin >> newRecord.date.month;
+
+    cout << "Введите год подписания рукописи\n";
+    cin >> newRecord.date.year;
+
+    lines.push_back(newRecord);
+
+    stringLines = {};
+
+    addRecordBin({lines[lines.size() - 1]});
+    linesFromFile = readDataBin();
+    string newTitleBin = "Каталог библиотеки (с добавленной записью)";
+
+    for(auto rec : linesFromFile) {
+        stringLines.push_back({rec.author, rec.name, to_string(rec.year), rec.group, dateToString(rec.date)});
+    }
+    drawTable(stringLines, columnsMain, newTitleBin, true);
+
+    cout << "Задание: Изменить записи файла, содержащие вводимое с клавиатуры строковое значение, увеличив соответствующую дату на 1";
+
+    for(int i = 0; i < linesFromFile.size(); i++) {
+        linesFromFile[i].date.day++;
+    }
+
+    remove(BIN_PATH);
+
+    addRecordBin(linesFromFile);
+
+    stringLines = {};
+
+    string changedTitleBin = "Каталог библиотеки (с измененной записью)";
+
+    for(auto rec : linesFromFile) {
+        stringLines.push_back({rec.author, rec.name, to_string(rec.year), rec.group, dateToString(rec.date)});
+    }
+
+    drawTable(stringLines, columnsMain, changedTitleBin, true);
+}
