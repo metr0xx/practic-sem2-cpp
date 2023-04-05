@@ -1,6 +1,7 @@
 ﻿#include <iostream>
 #include <windows.h>
 #include <string>
+#include <utility>
 #include <vector>
 #include <numeric>
 #include <sstream>
@@ -8,13 +9,63 @@
 
 using namespace std;
 
-const char* TXT_PATH = "C:/prac/Frolov.txt";
-const char* BIN_PATH = "C:/prac/Frolov.bin";
+const char* TXT_PATH = "./Frolov.txt";
+const char* BIN_PATH = "./Frolov.bin";
 
 struct Date {
+    unsigned short int Day;
+    unsigned short int Month;
+    unsigned short int Year;
+};
+
+class CLDate {
     unsigned short int day;
     unsigned short int month;
     unsigned short int year;
+
+public:
+    CLDate() {
+        this->day = 0;
+        this->month = 0;
+        this->year = 0;
+    }
+
+    CLDate(unsigned short int day, unsigned short int month, unsigned short int year) {
+        this->day = day;
+        this->month = month;
+        this->year = year;
+    }
+
+    void SetDay(unsigned short int day) {
+        this->day = day;
+    }
+
+    unsigned short int GetDay() const {
+        return this->day;
+    }
+
+    void SetMonth(unsigned short int month) {
+        this->month = month;
+    }
+
+    unsigned short int GetMonth() const {
+        return this->month;
+    }
+
+    void SetYear(unsigned short int year) {
+        this->year = year;
+    }
+
+    unsigned short int GetYear() const {
+        return this->year;
+    }
+
+    bool СheckDate() const {
+        if(this->day < 0 || this->day > 31) {
+            return false;
+        }
+        return true;
+    }
 };
 
 struct Record {
@@ -23,6 +74,55 @@ struct Record {
     unsigned short year;
     char group[5];
     Date date;
+};
+
+class CLRecord {
+    string author;
+
+
+
+private:
+    unsigned short int year;
+protected:
+    string group;
+    CLDate date;
+
+public:
+    string Name;
+
+    CLRecord() {
+        this->author = "";
+        this->Name = "";
+        this->year = 0;
+        this->group = "";
+        this->date = {0, 0, 0};
+    }
+
+    CLRecord(string author, string name, unsigned short int year, string group, CLDate date) {
+        this->author = std::move(author);
+        this->Name = std::move(name);
+        this->year = year;
+        this->group = std::move(group);
+        this->date = date;
+    }
+
+    void SetAuthor(string newAuthor) {
+        this->author = std::move(newAuthor);
+    }
+
+    void SetYear(unsigned short int newYear) {
+        this->year = newYear;
+    }
+
+    void SetGroup(string newGroup) {
+        this->group = std::move(newGroup);
+    }
+
+    void SetDate(Date newDate) {
+        this->date.SetDay(newDate.Day);
+        this->date.SetMonth(newDate.Month);
+        this->date.SetYear(newDate.Year);
+    }
 };
 
 void drawBorder(int tableWidth) {
@@ -102,13 +202,13 @@ void drawTable(vector<vector<string>> lines, vector<string> columns, string titl
 vector<Record> modifyRecords(vector<Record> lines) {
     vector<int> average;
     for (auto &record : lines) {
-        strcpy_s(record.name, to_string(((record.date.day + record.date.month + record.date.year + record.year) / 4)).c_str());
+        strcpy_s(record.name, to_string(((record.date.Day + record.date.Month + record.date.Year + record.year) / 4)).c_str());
     }
     return lines;
 }
 
 string dateToString(Date date) {
-    return to_string(date.day) + "." + to_string(date.month) + "." + to_string(date.year);
+    return to_string(date.Day) + "." + to_string(date.Month) + "." + to_string(date.Year);
 }
 
 vector<Record> readDataBin() {
@@ -139,9 +239,9 @@ vector<Record> readDataTxt() {
     vector<Record> records;
 
     for(int i = 0; i < 3; i++) {
-        file >> record.date.day;
-        file >> record.date.month;
-        file >> record.date.year;
+        file >> record.date.Day;
+        file >> record.date.Month;
+        file >> record.date.Year;
         file >> record.author;
         file >> record.name;
         file >> record.year;
@@ -157,9 +257,9 @@ vector<Record> readDataTxt() {
 void addRecordTxt(vector<Record> records) {
     ofstream file(TXT_PATH, ios::app);
     for(int i = 0; i < records.size(); i++) {
-        file << records[i].date.day << endl;
-        file << records[i].date.month << endl;
-        file << records[i].date.year << endl;
+        file << records[i].date.Day << endl;
+        file << records[i].date.Month << endl;
+        file << records[i].date.Year << endl;
         file << records[i].author << endl;
         file << records[i].name << endl;
         file << records[i].year << endl;
@@ -297,13 +397,13 @@ int main() {
     cin >> newRecord.group;
 
     cout << "Введите день подписания рукописи\n";
-    cin >> newRecord.date.day;
+    cin >> newRecord.date.Day;
 
     cout << "Введите месяц подписания рукописи\n";
-    cin >> newRecord.date.month;
+    cin >> newRecord.date.Month;
 
     cout << "Введите год подписания рукописи\n";
-    cin >> newRecord.date.year;
+    cin >> newRecord.date.Year;
 
     lines.push_back(newRecord);
 
@@ -321,7 +421,7 @@ int main() {
     cout << "Задание: Изменить записи файла, содержащие вводимое с клавиатуры строковое значение, увеличив соответствующую дату на 1";
 
     for(int i = 0; i < linesFromFile.size(); i++) {
-        linesFromFile[i].date.day++;
+        linesFromFile[i].date.Day++;
     }
 
     remove(BIN_PATH);
@@ -337,4 +437,31 @@ int main() {
     }
 
     drawTable(stringLines, columnsMain, changedTitleBin, true);
+
+    cout << "Практическая работа №5\n";
+
+    static CLDate clDate1(3, 5, 2001);
+    static CLDate clDate2;
+
+    CLDate clDate(30, 6, 2003);
+
+    static CLDate DC = clDate;
+    DC.SetDay(DC.GetDay() + 5);
+    if(!DC.СheckDate()) {
+        cout << "Недопустимая дата";
+        DC.SetDay(DC.GetDay() - 5);
+    }
+    static CLRecord staticClRecord;
+    CLRecord clRecord;
+
+    vector<CLRecord> clRecords;
+
+    for(auto line : lines) {
+       clRecord.Name = line.name;
+       clRecord.SetAuthor(line.author);
+       clRecord.SetGroup(line.group);
+       clRecord.SetYear(line.year);
+       clRecord.SetDate(line.date);
+       clRecords.push_back(clRecord);
+    }
 }
